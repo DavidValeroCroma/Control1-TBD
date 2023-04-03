@@ -8,6 +8,22 @@ CREATE TABLE comuna (
   PRIMARY KEY (id_comuna)
 ) ;
 
+DROP TABLE IF EXISTS colegio;
+
+CREATE SEQUENCE colegio_seq;
+
+CREATE TABLE colegio (
+  id_colegio int NOT NULL DEFAULT NEXTVAL ('colegio_seq'),
+  nombre varchar(100) NOT NULL,
+  direccion varchar(200) NOT NULL,
+  id_comuna int NOT NULL,
+  PRIMARY KEY (id_colegio)
+,
+  CONSTRAINT colegio_FK FOREIGN KEY (id_comuna) REFERENCES comuna (id_comuna)
+) ;
+
+CREATE INDEX colegio_FK ON colegio (id_comuna);
+
 DROP TABLE IF EXISTS empleado;
 
 CREATE SEQUENCE empleado_seq;
@@ -17,7 +33,10 @@ CREATE TABLE empleado (
   nombre varchar(100) NOT NULL,
   tipo varchar(100) NOT NULL,
   rut int NOT NULL,
+  id_comuna int NOT NULL,
   CONSTRAINT id_empleado UNIQUE  (id_empleado)
+,
+  CONSTRAINT empleado_FK FOREIGN KEY (id_colegio) REFERENCES colegio (id_colegio)
 ) ;
 
 DROP TABLE IF EXISTS alumno;
@@ -53,22 +72,6 @@ CREATE TABLE apoderado (
 ) ;
 
 CREATE INDEX apoderado_FK ON apoderado (id_comuna);
-
-DROP TABLE IF EXISTS colegio;
-
-CREATE SEQUENCE colegio_seq;
-
-CREATE TABLE colegio (
-  id_colegio int NOT NULL DEFAULT NEXTVAL ('colegio_seq'),
-  nombre varchar(100) NOT NULL,
-  direccion varchar(200) NOT NULL,
-  id_comuna int NOT NULL,
-  PRIMARY KEY (id_colegio)
-,
-  CONSTRAINT colegio_FK FOREIGN KEY (id_comuna) REFERENCES comuna (id_comuna)
-) ;
-
-CREATE INDEX colegio_FK ON colegio (id_comuna);
 
 DROP TABLE IF EXISTS profesor;
 
