@@ -33,7 +33,7 @@ CREATE TABLE empleado (
   nombre varchar(100) NOT NULL,
   tipo varchar(100) NOT NULL,
   rut int NOT NULL,
-  id_comuna int NOT NULL,
+  id_colegio int NOT NULL,
   CONSTRAINT id_empleado UNIQUE  (id_empleado)
 ,
   CONSTRAINT empleado_FK FOREIGN KEY (id_colegio) REFERENCES colegio (id_colegio)
