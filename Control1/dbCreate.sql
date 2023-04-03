@@ -195,16 +195,3 @@ CREATE TABLE asistencia (
 
 CREATE INDEX asistencia_FK ON asistencia (id_alumno);
 CREATE INDEX asistencia_FK_1 ON asistencia (id_horario);
-
-DROP TABLE IF EXISTS colegio_empleado;
-
-CREATE TABLE colegio_empleado (
-  id_colegio int NOT NULL,
-  id_empleado int NOT NULL,
-  PRIMARY KEY (id_colegio,id_empleado)
-,
-  CONSTRAINT colegio_empleado_FK FOREIGN KEY (id_colegio) REFERENCES colegio (id_colegio),
-  CONSTRAINT colegio_empleado_FK_1 FOREIGN KEY (id_empleado) REFERENCES empleado (id_empleado)
-)  ;
-
-CREATE INDEX colegio_empleado_FK_1 ON colegio_empleado (id_empleado);
