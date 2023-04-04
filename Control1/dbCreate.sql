@@ -1,197 +1,212 @@
-DROP TABLE IF EXISTS comuna;
+-- Database: control1
 
-CREATE SEQUENCE comuna_seq;
+-- DROP DATABASE IF EXISTS control1;
 
-CREATE TABLE comuna (
-  id_comuna int NOT NULL DEFAULT NEXTVAL ('comuna_seq'),
-  nombre varchar(100) NOT NULL,
-  PRIMARY KEY (id_comuna)
-) ;
 
-DROP TABLE IF EXISTS colegio;
+create table if not exists public.alumno
+(
+    rut_alumno      varchar(255) not null,
+    apellido        varchar(255) not null,
+    nombre          varchar(255) not null,
+    padre_apoderado boolean      not null,
+    rut_apoderado   varchar(255) not null,
+    id_comuna       bigint       not null
+);
 
-CREATE SEQUENCE colegio_seq;
+alter table public.alumno
+    add constraint alumno_pkey
+        primary key (rut_alumno);
 
-CREATE TABLE colegio (
-  id_colegio int NOT NULL DEFAULT NEXTVAL ('colegio_seq'),
-  nombre varchar(100) NOT NULL,
-  direccion varchar(200) NOT NULL,
-  id_comuna int NOT NULL,
-  PRIMARY KEY (id_colegio)
-,
-  CONSTRAINT colegio_FK FOREIGN KEY (id_comuna) REFERENCES comuna (id_comuna)
-) ;
+create table if not exists public.alumno_curso
+(
+    id_alumno_curso     bigint       not null,
+    rut_alumno 		varchar(255) not null,
+    id_curso   		bigint       not null
+);
 
-CREATE INDEX colegio_FK ON colegio (id_comuna);
+alter table public.alumno_curso
+    add constraint alumno_curso_pkey
+        primary key (id_alumno_curso);
 
-DROP TABLE IF EXISTS empleado;
+alter table public.alumno_curso
+    add constraint alumno_curso_fkey
+        foreign key (rut_alumno) references public.alumno;
 
-CREATE SEQUENCE empleado_seq;
+create table if not exists public.apoderado
+(
+    rut_apoderado  varchar(255) not null,
+    apellido  varchar(255) not null,
+    email     varchar(255) not null,
+    nombre    varchar(255) not null,
+    telefono  varchar(255) not null,
+    id_comuna bigint       not null
+);
 
-CREATE TABLE empleado (
-  id_empleado int NOT NULL DEFAULT NEXTVAL ('empleado_seq'),
-  nombre varchar(100) NOT NULL,
-  tipo varchar(100) NOT NULL,
-  rut int NOT NULL,
-  id_colegio int NOT NULL,
-  CONSTRAINT id_empleado UNIQUE  (id_empleado)
-,
-  CONSTRAINT empleado_FK FOREIGN KEY (id_colegio) REFERENCES colegio (id_colegio)
-) ;
+alter table public.apoderado
+    add constraint apoderado_pkey
+        primary key (rut_apoderado);
 
-DROP TABLE IF EXISTS alumno;
+alter table public.alumno
+    add constraint rut_apoderado
+        foreign key (rut_apoderado) references public.apoderado;
 
-CREATE SEQUENCE alumno_seq;
+create table if not exists public.asistencia
+(
+    id_asistencia     bigint       not null,
+    asistencia        boolean,
+    fecha             date,
+    rut_alumno         varchar(255) not null,
+    id_franja_horaria bigint       not null
+);
 
-CREATE TABLE alumno (
-  id_alumno int NOT NULL DEFAULT NEXTVAL ('alumno_seq'),
-  nombre varchar(100) NOT NULL,
-  rut int NOT NULL,
-  sexo varchar(1) NOT NULL,
-  id_comuna int NOT NULL,
-  PRIMARY KEY (id_alumno)
-,
-  CONSTRAINT alumno_FK FOREIGN KEY (id_comuna) REFERENCES comuna (id_comuna)
-) ;
+alter table public.asistencia
+    add constraint asistencia_pkey
+        primary key (id_asistencia);
 
-CREATE INDEX alumno_FK ON alumno (id_comuna);
+alter table public.asistencia
+    add constraint rut_alumno
+        foreign key (rut_alumno) references public.alumno;
 
-DROP TABLE IF EXISTS apoderado;
 
-CREATE SEQUENCE apoderado_seq;
+create table if not exists public.colegio
+(
+    id_colegio	bigint not null,
+    nombre    	varchar(255),
+    id_comuna 	bigint not null
+);
 
-CREATE TABLE apoderado (
-  id_apod int NOT NULL DEFAULT NEXTVAL ('apoderado_seq'),
-  nombre varchar(100) NOT NULL,
-  rut int NOT NULL,
-  parentesco varchar(100) NOT NULL,
-  id_comuna int NOT NULL,
-  PRIMARY KEY (id_apod)
-,
-  CONSTRAINT apoderado_FK FOREIGN KEY (id_comuna) REFERENCES comuna (id_comuna)
-) ;
+alter table public.colegio
+    add constraint colegio_pkey
+        primary key (id_colegio);
 
-CREATE INDEX apoderado_FK ON apoderado (id_comuna);
+create table if not exists public.comuna
+(
+    id_comuna     bigint not null,
+    ciudad varchar(255),
+    nombre varchar(255),
+    region varchar(255)
+);
 
-DROP TABLE IF EXISTS profesor;
+alter table public.comuna
+    add constraint comuna_pkey
+        primary key (id_comuna);
 
-CREATE SEQUENCE profesor_seq;
+alter table public.alumno
+    add constraint id_comuna
+        foreign key (id_comuna) references public.comuna;
 
-CREATE TABLE profesor (
-  id_prof int NOT NULL DEFAULT NEXTVAL ('profesor_seq'),
-  asignatura varchar(100) NOT NULL,
-  id_empleado int NOT NULL,
-  PRIMARY KEY (id_prof),
-  CONSTRAINT id_prof UNIQUE  (id_prof)
-,
-  CONSTRAINT profesor_FK FOREIGN KEY (id_empleado) REFERENCES empleado (id_empleado)
-) ;
+alter table public.apoderado
+    add constraint id_comuna
+        foreign key (id_comuna) references public.comuna;
 
-CREATE INDEX profesor_FK ON profesor (id_empleado);
+alter table public.colegio
+    add constraint id_comuna
+        foreign key (id_comuna) references public.comuna;
 
-DROP TABLE IF EXISTS plantilla_curso;
+CREATE TABLE IF NOT EXISTS public.curso
+(
+    id_curso bigint NOT NULL,
+    anio integer NOT NULL,
+    letra character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    id_colegio bigint, -- Agregamos la columna id_colegio
+    CONSTRAINT curso_pkey PRIMARY KEY (id_curso),
+    CONSTRAINT fk_curso_colegio -- Agregamos la restricción de llave foránea
+        FOREIGN KEY (id_colegio)
+            REFERENCES public.colegio (id_colegio)
+);
 
-CREATE SEQUENCE plantilla_curso_seq;
+alter table public.alumno_curso
+    add constraint id_curso
+        foreign key (id_curso) references public.curso;
 
-CREATE TABLE plantilla_curso (
-  id_plant int NOT NULL DEFAULT NEXTVAL ('plantilla_curso_seq'),
-  cant_alumnos int NOT NULL DEFAULT '35',
-  planificacion varchar(300) DEFAULT NULL,
-  PRIMARY KEY (id_plant)
-) ;
+create table if not exists public.empleado
+(
+    rut_empleado   	varchar(20)  not null,
+    apellido   		varchar(255) not null,
+    cargo      		varchar(255) not null,
+    nombre     		varchar(255) not null,
+    sueldo     		bigint       not null,
+    id_colegio 		bigint       not null,
+    id_comuna  		bigint       not null
+);
 
-DROP TABLE IF EXISTS curso;
+alter table public.empleado
+    add constraint empleado_pkey
+        primary key (rut_empleado);
 
-CREATE SEQUENCE curso_seq;
+alter table public.empleado
+    add constraint id_colegio
+        foreign key (id_colegio) references public.colegio;
 
-CREATE TABLE curso (
-  id_curso int NOT NULL DEFAULT NEXTVAL ('curso_seq'),
-  nivel int NOT NULL,
-  id_plant int NOT NULL,
-  id_profesor_jefe int NOT NULL,
-  año int NOT NULL,
-  PRIMARY KEY (id_curso)
-,
-  CONSTRAINT curso_FK FOREIGN KEY (id_profesor_jefe) REFERENCES profesor (id_prof),
-  CONSTRAINT curso_FK_1 FOREIGN KEY (id_plant) REFERENCES plantilla_curso (id_plant)
-) ;
+alter table public.empleado
+    add constraint id_comuna
+        foreign key (id_comuna) references public.comuna;
 
-CREATE INDEX curso_FK ON curso (id_profesor_jefe);
-CREATE INDEX curso_FK_1 ON curso (id_plant);
+create table if not exists public.franja_horaria
+(
+    id_franja_horaria           bigint       not null,
+    hora_inicio  varchar(255) not null,
+    hora_termino varchar(255) not null
+);
 
-DROP TABLE IF EXISTS sueldo;
+alter table public.franja_horaria
+    add constraint franja_horaria_pkey
+        primary key (id_franja_horaria);
 
-CREATE SEQUENCE sueldo_seq;
+alter table public.asistencia
+    add constraint id_franja_horaria
+        foreign key (id_franja_horaria) references public.franja_horaria;
 
-CREATE TABLE sueldo (
-  id_sueldo int NOT NULL DEFAULT NEXTVAL ('sueldo_seq'),
-  monto int NOT NULL,
-  id_empleado int NOT NULL,
-  PRIMARY KEY (id_sueldo)
-,
-  CONSTRAINT sueldo_FK FOREIGN KEY (id_empleado) REFERENCES empleado (id_empleado)
-) ;
+create table if not exists public.plantilla_curso
+(
+    id_plantilla_curso         	bigint not null,
+    id_curso          		bigint not null,
+    fecha_inicio      		date,
+    fecha_termino     		date,
+    cupos             		integer
+);
 
-CREATE INDEX sueldo_FK ON sueldo (id_empleado);
+alter table public.plantilla_curso
+    add constraint plantilla_curso_pkey
+        primary key (id_plantilla_curso);
 
-DROP TABLE IF EXISTS horario;
+alter table public.plantilla_curso
+    add constraint id_curso
+        foreign key (id_curso) references public.curso;
 
-CREATE SEQUENCE horario_seq;
+create table if not exists public.profesor
+(
+    id_profesor          bigint      not null,
+    rut_empleado varchar(20) not null
+);
 
-CREATE TABLE horario (
-  id_horario int NOT NULL DEFAULT NEXTVAL ('horario_seq'),
-  dia varchar(30) NOT NULL,
-  bloque int NOT NULL,
-  id_prof int NOT NULL,
-  PRIMARY KEY (id_horario),
-  CONSTRAINT horario_un UNIQUE  (id_horario,dia,bloque,id_prof)
-,
-  CONSTRAINT horario_FK FOREIGN KEY (id_prof) REFERENCES profesor (id_prof)
-) ;
+alter table public.profesor
+    add constraint profesor_pkey
+        primary key (id_profesor);
 
-CREATE INDEX horario_FK ON horario (id_prof);
+alter table public.profesor
+    add constraint rut_empleado
+        foreign key (rut_empleado) references public.empleado;
 
-DROP TABLE IF EXISTS alumno_apoderado;
+create table if not exists public.profesor_curso
+(
+    id_profesor_curso  bigint not null,
+    id_curso           bigint not null,
+    es_jefe	       bool not null,
+    id_profesor        bigint not null
+);
 
-CREATE TABLE alumno_apoderado (
-  id_alumno int NOT NULL,
-  id_apod int NOT NULL,
-  PRIMARY KEY (id_alumno,id_apod)
-,
-  CONSTRAINT alumno_apoderado_FK FOREIGN KEY (id_alumno) REFERENCES alumno (id_alumno),
-  CONSTRAINT alumno_apoderado_FK_1 FOREIGN KEY (id_apod) REFERENCES apoderado (id_apod)
-) ;
+alter table public.profesor_curso
+    add constraint profesor_curso_pkey
+        primary key (id_profesor_curso);
 
-CREATE INDEX alumno_apoderado_FK_1 ON alumno_apoderado (id_apod);
+alter table public.profesor_curso
+    add constraint id_curso
+        foreign key (id_curso) references public.curso;
 
-DROP TABLE IF EXISTS alumno_curso;
 
-CREATE TABLE alumno_curso (
-  id_alumno int NOT NULL,
-  id_curso int NOT NULL,
-  PRIMARY KEY (id_alumno,id_curso)
-,
-  CONSTRAINT alumno_curso_FK FOREIGN KEY (id_alumno) REFERENCES alumno (id_alumno),
-  CONSTRAINT alumno_curso_FK_1 FOREIGN KEY (id_curso) REFERENCES curso (id_curso)
-) ;
+alter table public.profesor_curso
+    add constraint id_profesor
+        foreign key (id_profesor) references public.profesor;
 
-CREATE INDEX alumno_curso_FK_1 ON alumno_curso (id_curso);
 
-DROP TABLE IF EXISTS asistencia;
-
-CREATE SEQUENCE asistencia_seq;
-
-CREATE TABLE asistencia (
-  id_asistencia int NOT NULL DEFAULT NEXTVAL ('asistencia_seq'),
-  fecha date NOT NULL,
-  asistio smallint NOT NULL DEFAULT '0',
-  id_alumno int NOT NULL,
-  id_horario int NOT NULL,
-  PRIMARY KEY (id_asistencia)
-,
-  CONSTRAINT asistencia_FK FOREIGN KEY (id_alumno) REFERENCES alumno (id_alumno),
-  CONSTRAINT asistencia_FK_1 FOREIGN KEY (id_horario) REFERENCES horario (id_horario)
-) ;
-
-CREATE INDEX asistencia_FK ON asistencia (id_alumno);
-CREATE INDEX asistencia_FK_1 ON asistencia (id_horario);
